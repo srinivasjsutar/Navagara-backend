@@ -20,8 +20,8 @@ connectDB();
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
+      "https://navanagara.vercel.app",
+      "https://navagara-backend.onrender.com",
     ], // Add your frontend URL
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
