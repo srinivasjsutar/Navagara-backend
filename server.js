@@ -22,7 +22,7 @@ app.use(
     origin: [
       "https://navanagara.vercel.app",
       "https://navagara-backend.onrender.com",
-    ], // Add your frontend URL
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -50,7 +50,9 @@ app.use("/", receiptRoutes);
 app.get("/test", (req, res) => {
   res.json({
     message: "Backend is running!",
-    emailConfigured: !!process.env.EMAIL_USER,
+    emailConfigured: !!process.env.BREVO_API_KEY,
+    senderEmail: process.env.SENDER_EMAIL || "NOT CONFIGURED",
+    companyEmail: process.env.COMPANY_EMAIL || "NOT CONFIGURED",
     port: process.env.PORT || 3001,
   });
 });
@@ -78,9 +80,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📧 Email User: ${process.env.EMAIL_USER || "NOT CONFIGURED"}`);
-  // console.log(`📧 Admin Email: ${process.env.ADMIN_EMAIL || "NOT CONFIGURED"}`);
-  console.log(
-    `💾 Database: ${process.env.MONGODB_URI ? "Connected" : "Check connection"}`,
-  );
+  console.log(`📧 Brevo API Key: ${process.env.BREVO_API_KEY ? "✅ Configured" : "❌ NOT CONFIGURED"}`);
+  console.log(`📧 Sender Email: ${process.env.SENDER_EMAIL || "❌ NOT CONFIGURED"}`);
+  console.log(`📧 Company Email: ${process.env.COMPANY_EMAIL || "❌ NOT CONFIGURED"}`);
+  console.log(`💾 Database: ${process.env.MONGODB_URI ? "Connected" : "Check connection"}`);
 });
