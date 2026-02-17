@@ -13,7 +13,7 @@ const generateReceiptNumber = async () => {
 // Create receipt
 exports.createReceipt = async (req, res) => {
   try {
-    const seniorityNumber = req.body.membershipid; // This is the seniority_no from form
+    const seniorityNumber = req.body.membershipid;
     const userEmail = req.body.email;
 
     // VALIDATION 1: Check if seniority number is provided
@@ -28,7 +28,7 @@ exports.createReceipt = async (req, res) => {
 
     // VALIDATION 2: Check if member exists with this seniority number
     const memberDoc = await Member.findOne({ seniority_no: seniorityNumber });
-    
+
     if (!memberDoc) {
       console.log(`❌ Member not found for seniority number: ${seniorityNumber}`);
       return res.status(404).json({
@@ -56,7 +56,7 @@ exports.createReceipt = async (req, res) => {
     const bookingamount = parseInt(bookingDoc.bookingamount || 0);
     const bank = req.body.bank || bookingDoc.bank || '';
     const amountpaid = parseInt(req.body.amountpaid || 0);
-    
+
     // Generate unique receipt number
     const receipt_no = await generateReceiptNumber();
 
@@ -98,7 +98,7 @@ exports.createReceipt = async (req, res) => {
       try {
         const pdfBase64 = req.body.pdfBase64;
         const pdfFilename = req.body.pdfFilename || `Receipt_${receipt_no}.pdf`;
-        
+
         // Customer email message
         const customerMessage = `Dear ${receiptData.name},
 
@@ -106,12 +106,12 @@ Thank you for your payment!
 
 Receipt Details:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Receipt Number: ${receipt_no}
-Seniority Number: ${seniorityNumber}
-Amount Paid: ₹${amountpaid.toLocaleString('en-IN')}
-Payment Mode: ${receiptData.paymentmode}
-Transaction ID: ${receiptData.transactionid}
-Date: ${new Date(receiptData.date).toLocaleDateString('en-IN')}
+Receipt Number   : ${receipt_no}
+Seniority Number : ${seniorityNumber}
+Amount Paid      : ₹${amountpaid.toLocaleString('en-IN')}
+Payment Mode     : ${receiptData.paymentmode}
+Transaction ID   : ${receiptData.transactionid}
+Date             : ${new Date(receiptData.date).toLocaleDateString('en-IN')}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Your payment receipt is attached to this email as a PDF file.
@@ -129,20 +129,20 @@ This is an automated email. Please do not reply to this message.`;
 
 Receipt Details:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Receipt Number: ${receipt_no}
-Member Name: ${receiptData.name}
-Seniority Number: ${seniorityNumber}
-Customer Email: ${userEmail || 'Not provided'}
-Mobile: ${receiptData.mobilenumber || 'Not provided'}
+Receipt Number   : ${receipt_no}
+Member Name      : ${receiptData.name}
+Seniority Number : ${seniorityNumber}
+Customer Email   : ${userEmail || 'Not provided'}
+Mobile           : ${receiptData.mobilenumber || 'Not provided'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Amount Paid: ₹${amountpaid.toLocaleString('en-IN')}
-Booking Amount: ₹${bookingamount.toLocaleString('en-IN')}
-Total Received: ₹${receiptData.totalreceived.toLocaleString('en-IN')}
-Payment Mode: ${receiptData.paymentmode}
-Payment Type: ${receiptData.paymenttype}
-Transaction ID: ${receiptData.transactionid}
-Date: ${new Date(receiptData.date).toLocaleDateString('en-IN')}
-Project: ${receiptData.projectname || 'N/A'}
+Amount Paid      : ₹${amountpaid.toLocaleString('en-IN')}
+Booking Amount   : ₹${bookingamount.toLocaleString('en-IN')}
+Total Received   : ₹${receiptData.totalreceived.toLocaleString('en-IN')}
+Payment Mode     : ${receiptData.paymentmode}
+Payment Type     : ${receiptData.paymenttype}
+Transaction ID   : ${receiptData.transactionid}
+Date             : ${new Date(receiptData.date).toLocaleDateString('en-IN')}
+Project          : ${receiptData.projectname || 'N/A'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 PDF receipt is attached.
@@ -151,8 +151,8 @@ PDF receipt is attached.
 Navanagara Admin System`;
 
         const emailPromises = [];
-        
-        // 1. Send to customer's email (from form)
+
+        // 1. Send to CUSTOMER email (from form)
         if (userEmail && userEmail.trim()) {
           console.log(`📧 Sending to customer: ${userEmail}`);
           emailPromises.push(
@@ -163,27 +163,27 @@ Navanagara Admin System`;
               pdfBase64,
               pdfFilename
             )
-            .then(() => console.log(`✅ Email sent to customer: ${userEmail}`))
-            .catch((error) => console.error(`⚠️ Failed to send to customer ${userEmail}:`, error.message))
+              .then(() => console.log(`✅ Email sent to customer: ${userEmail}`))
+              .catch((error) => console.error(`⚠️ Failed to send to customer ${userEmail}:`, error.message))
           );
         } else {
           console.log(`⚠️ No customer email provided`);
         }
-        
-        // 2. Send to company email (COMPANY_EMAIL from .env)
-        const companyEmail = process.env.COMPANY_EMAIL;
+
+        // 2. Send to COMPANY email (from .env)
+        const companyEmail = process.env.COMPANY_EMAIL; // ✅ fixed from EMAIL_USER
         if (companyEmail && companyEmail.trim()) {
           console.log(`📧 Sending to company: ${companyEmail}`);
           emailPromises.push(
             sendMail(
               companyEmail.trim(),
-              `New Receipt - ${receipt_no}`,
+              `[COMPANY COPY] New Receipt - ${receipt_no}`,
               companyMessage,
               pdfBase64,
               pdfFilename
             )
-            .then(() => console.log(`✅ Email sent to company: ${companyEmail}`))
-            .catch((error) => console.error(`⚠️ Failed to send to company ${companyEmail}:`, error.message))
+              .then(() => console.log(`✅ Email sent to company: ${companyEmail}`))
+              .catch((error) => console.error(`⚠️ Failed to send to company ${companyEmail}:`, error.message))
           );
         } else {
           console.log(`⚠️ COMPANY_EMAIL not configured in .env`);
@@ -229,7 +229,7 @@ exports.getAllReceipts = async (req, res) => {
 exports.getReceiptById = async (req, res) => {
   try {
     const receipt = await Receipt.findById(req.params.id);
-    
+
     if (!receipt) {
       return res.status(404).json({
         success: false,
