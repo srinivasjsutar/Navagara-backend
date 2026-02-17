@@ -16,7 +16,7 @@ connectDB();
 app.use(
   cors({
     origin: [
-      "https://navanagara.vercel.app",
+      "https://www.navanagarahousebuildingsociety.com",
       "https://navagara-backend.onrender.com",
     ],
     credentials: true,
