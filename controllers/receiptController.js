@@ -170,8 +170,8 @@ Navanagara Admin System`;
           console.log(`⚠️ No customer email provided`);
         }
         
-        // 2. Send to company email (EMAIL_USER from .env)
-        const companyEmail = process.env.EMAIL_USER;
+        // 2. Send to company email (COMPANY_EMAIL from .env)
+        const companyEmail = process.env.COMPANY_EMAIL;
         if (companyEmail && companyEmail.trim()) {
           console.log(`📧 Sending to company: ${companyEmail}`);
           emailPromises.push(
@@ -186,7 +186,7 @@ Navanagara Admin System`;
             .catch((error) => console.error(`⚠️ Failed to send to company ${companyEmail}:`, error.message))
           );
         } else {
-          console.log(`⚠️ EMAIL_USER not configured in .env`);
+          console.log(`⚠️ COMPANY_EMAIL not configured in .env`);
         }
 
         await Promise.all(emailPromises);
