@@ -6,24 +6,9 @@ apiInstance.authentications["apiKey"].apiKey = process.env.BREVO_API_KEY;
 
 console.log("📧 Email Configuration:");
 console.log("   Service: Brevo API (Free - 9000 emails/month)");
-console.log(
-  "   API Key:",
-  process.env.BREVO_API_KEY ? "✅ SET" : "❌ NOT SET"
-);
-console.log(
-  "   Sender Email:",
-  process.env.SENDER_EMAIL || "❌ NOT SET"
-);
+console.log("   API Key:", process.env.BREVO_API_KEY ? "✅ SET" : "❌ NOT SET");
+console.log("   Sender Email:", process.env.SENDER_EMAIL || "❌ NOT SET");
 
-/**
- * Send email function with optional PDF attachment
- * @param {string} to - Recipient email address
- * @param {string} subject - Email subject
- * @param {string} text - Plain text message
- * @param {string} pdfBase64 - Base64 encoded PDF (optional)
- * @param {string} pdfFilename - PDF filename (optional)
- * @returns {Promise} - Resolves when email is sent
- */
 const sendMail = async (to, subject, text, pdfBase64, pdfFilename) => {
   try {
     console.log(`📧 Sending email to: ${to}`); // ✅ fixed missing (
@@ -50,12 +35,19 @@ const sendMail = async (to, subject, text, pdfBase64, pdfFilename) => {
     }
 
     const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+
+    // ✅ Fixed: Brevo v2 returns messageId inside response body
+    const messageId = data?.messageId || data?.body?.messageId || "sent";
+
     console.log("✅ Email sent successfully via Brevo");
-    console.log("✅ Message ID:", data.messageId);
-    return { success: true, messageId: data.messageId };
+    console.log("✅ Message ID:", messageId);
+    console.log("✅ Full response:", JSON.stringify(data));
+
+    return { success: true, messageId };
 
   } catch (error) {
     console.error("❌ Error sending email:", error.message);
+    console.error("❌ Full error:", JSON.stringify(error?.response?.body || {}));
     throw error;
   }
 };
