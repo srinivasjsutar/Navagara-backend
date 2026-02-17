@@ -26,13 +26,13 @@ console.log(
  */
 const sendMail = async (to, subject, text, pdfBase64, pdfFilename) => {
   try {
-    console.log(`📧 Sending email to: ${to}`);
+    console.log(`📧 Sending email to: ${to}`); // ✅ fixed missing (
 
     const sendSmtpEmail = new Brevo.SendSmtpEmail();
 
     sendSmtpEmail.sender = {
       name: "Navanagara Society",
-      email: process.env.SENDER_EMAIL, // your brevo verified sender email
+      email: process.env.SENDER_EMAIL,
     };
 
     sendSmtpEmail.to = [{ email: to }];
@@ -44,7 +44,7 @@ const sendMail = async (to, subject, text, pdfBase64, pdfFilename) => {
       sendSmtpEmail.attachment = [
         {
           name: pdfFilename,
-          content: pdfBase64, // base64 string
+          content: pdfBase64,
         },
       ];
     }
@@ -53,6 +53,7 @@ const sendMail = async (to, subject, text, pdfBase64, pdfFilename) => {
     console.log("✅ Email sent successfully via Brevo");
     console.log("✅ Message ID:", data.messageId);
     return { success: true, messageId: data.messageId };
+
   } catch (error) {
     console.error("❌ Error sending email:", error.message);
     throw error;
