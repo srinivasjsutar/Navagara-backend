@@ -41,7 +41,7 @@ const receiptSchema = new mongoose.Schema({
   dimension: String,
   created_by: String,
   bank: String,
-  senioritynumber: String
+  seniority_no: String
 }, {
   timestamps: true
 });
