@@ -102,52 +102,45 @@ exports.createReceipt = async (req, res) => {
         // Customer email message
         const customerMessage = `Dear ${receiptData.name},
 
-Thank you for your payment!
+Thank you for your payment.
 
-Receipt Details:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Receipt Number   : ${receipt_no}
 Seniority Number : ${seniorityNumber}
-Amount Paid      : ₹${amountpaid.toLocaleString('en-IN')}
+Amount Paid      : Rs.${amountpaid.toLocaleString('en-IN')}
 Payment Mode     : ${receiptData.paymentmode}
 Transaction ID   : ${receiptData.transactionid}
 Date             : ${new Date(receiptData.date).toLocaleDateString('en-IN')}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Your payment receipt is attached to this email as a PDF file.
-
-If you have any questions, please contact our support team.
-
-Best Regards,
-Navanagara House Building Co-operative Society
 
 ---
-This is an automated email. Please do not reply to this message.`;
+
+Your payment receipt is attached to this email. For any questions please contact our support team.
+
+Best Regards,
+Navanagara House Building Co-operative Society`;
 
         // Company copy message
-        const companyMessage = `NEW RECEIPT GENERATED
+        const companyMessage = `New Receipt Generated
 
-Receipt Details:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Receipt Number   : ${receipt_no}
 Member Name      : ${receiptData.name}
 Seniority Number : ${seniorityNumber}
 Customer Email   : ${userEmail || 'Not provided'}
 Mobile           : ${receiptData.mobilenumber || 'Not provided'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Amount Paid      : ₹${amountpaid.toLocaleString('en-IN')}
-Booking Amount   : ₹${bookingamount.toLocaleString('en-IN')}
-Total Received   : ₹${receiptData.totalreceived.toLocaleString('en-IN')}
+
+---
+
+Receipt Number   : ${receipt_no}
+Amount Paid      : Rs.${amountpaid.toLocaleString('en-IN')}
+Booking Amount   : Rs.${bookingamount.toLocaleString('en-IN')}
+Total Received   : Rs.${receiptData.totalreceived.toLocaleString('en-IN')}
 Payment Mode     : ${receiptData.paymentmode}
 Payment Type     : ${receiptData.paymenttype}
 Transaction ID   : ${receiptData.transactionid}
 Date             : ${new Date(receiptData.date).toLocaleDateString('en-IN')}
 Project          : ${receiptData.projectname || 'N/A'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PDF receipt is attached.
 
 ---
+
+PDF receipt is attached.
 Navanagara Admin System`;
 
         const emailPromises = [];
