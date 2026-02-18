@@ -38,7 +38,7 @@ const receiptSchema = new mongoose.Schema({
   paymentmode: String,
   paymenttype: String,
   transactionid: String,
-  dimension: String,
+  sitedimension: String,
   created_by: String,
   bank: String,
   seniority_no: String
