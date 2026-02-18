@@ -75,10 +75,10 @@ exports.createReceipt = async (req, res) => {
       paymentmode: req.body.paymentmode,
       paymenttype: req.body.paymenttype,
       transactionid: req.body.transactionid,
-      dimension: req.body.dimension || bookingDoc.sitedimension,
+      sitedimension: req.body.dimension || bookingDoc.sitedimension,  // ✅ FIXED: save as 'sitedimension'
       created_by: req.body.created_by || 'Admin',
       bank,
-      seniority_no: seniorityNumber  // ✅ Fixed to match model field name
+      senioritynumber: seniorityNumber
     };
 
     const receipt = new Receipt(receiptData);
