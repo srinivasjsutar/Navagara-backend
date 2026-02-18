@@ -38,10 +38,10 @@ const receiptSchema = new mongoose.Schema({
   paymentmode: String,
   paymenttype: String,
   transactionid: String,
-  sitedimension: String,
+  sitedimension: String,  // ✅ Field for site dimensions
   created_by: String,
   bank: String,
-  seniority_no: String
+  seniority_no: String    // ✅ CRITICAL: This is the correct field name (not senioritynumber)
 }, {
   timestamps: true
 });
