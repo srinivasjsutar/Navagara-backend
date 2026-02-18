@@ -78,7 +78,7 @@ exports.createReceipt = async (req, res) => {
       sitedimension: req.body.dimension || bookingDoc.sitedimension,  // ✅ FIXED: save as 'sitedimension'
       created_by: req.body.created_by || 'Admin',
       bank,
-      senioritynumber: seniorityNumber
+      seniority_no: seniorityNumber  // ✅ FIXED: changed from 'senioritynumber' to 'seniority_no'
     };
 
     const receipt = new Receipt(receiptData);
