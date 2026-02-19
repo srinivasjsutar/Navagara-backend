@@ -58,7 +58,7 @@ exports.createReceipt = async (req, res) => {
     const amountpaid = parseInt(req.body.amountpaid || 0);
 
     // Generate unique receipt number
-    const receipt_no = await generateReceiptNumber();
+    const receipt_no = req.body.receiptNo;
 
     // Create receipt object
     const receiptData = {
