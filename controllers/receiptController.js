@@ -13,7 +13,6 @@ const generateReceiptNumber = async () => {
 // Create receipt
 exports.createReceipt = async (req, res) => {
   try {
-    // Frontend sends: membershipid (= seniorityNumber)
     const seniorityNumber = req.body.membershipid;
     const userEmail = req.body.email;
 
@@ -53,26 +52,18 @@ exports.createReceipt = async (req, res) => {
 
     console.log(`✅ Site booking found for: ${bookingDoc.name}`);
 
-    // Parse amounts safely
+    // All validations passed - proceed with receipt creation
     const bookingamount = parseInt(bookingDoc.bookingamount || 0);
+    const bank = req.body.bank || bookingDoc.bank || '';
     const amountpaid = parseInt(req.body.amountpaid || 0);
 
-    // Bank — frontend sends bankName as 'bank'
-    const bank = req.body.bank || bookingDoc.bank || '';
-
-    // Transaction ID — frontend sends chequeNo || receiptNo as transactionid
-    const transactionid = req.body.transactionid || '';
-
-    // Site dimension — frontend sends as 'dimension', map to sitedimension
-    const sitedimension = req.body.dimension || bookingDoc.sitedimension || '';
-
-    // Generate receipt number for email subject & PDF filename ONLY (not stored)
+    // Generate unique receipt number
     const receipt_no = await generateReceiptNumber();
 
-    // Build receipt data — receipt_no NOT stored in DB
+    // Create receipt object
     const receiptData = {
       membershipid: seniorityNumber,
-      seniority_no: seniorityNumber,
+      receipt_no,
       name: req.body.name || memberDoc.name,
       email: userEmail,
       projectname: req.body.projectname || bookingDoc.projectname,
@@ -83,41 +74,41 @@ exports.createReceipt = async (req, res) => {
       totalreceived: bookingamount + amountpaid,
       paymentmode: req.body.paymentmode,
       paymenttype: req.body.paymenttype,
-      transactionid,
-      sitedimension,
-      bank,
+      transactionid: req.body.transactionid,
+      sitedimension: req.body.dimension || bookingDoc.sitedimension,  // ✅ FIXED: save as 'sitedimension'
       created_by: req.body.created_by || 'Admin',
+      bank,
+      seniority_no: seniorityNumber  // ✅ FIXED: changed from 'senioritynumber' to 'seniority_no'
     };
 
     const receipt = new Receipt(receiptData);
     await receipt.save();
 
-    console.log(`📄 Receipt saved successfully. Reference: ${receipt_no}`);
+    console.log('📄 Receipt created successfully:', receipt_no);
 
-    // Respond immediately — don't wait for emails
+    // Send response immediately - don't wait for emails
     res.status(201).json({
       success: true,
       message: 'Receipt created successfully! Emails are being sent...',
       data: receipt
     });
 
-    // Send emails in background
+    // Send emails in background (after response is sent)
     setImmediate(async () => {
       try {
         const pdfBase64 = req.body.pdfBase64;
+        const pdfFilename = req.body.pdfFilename || `Receipt_${receipt_no}.pdf`;
 
-        // Always use backend-generated receipt_no for filename — ignore pdfFilename from frontend
-        const pdfFilename = `Receipt_${receipt_no}.pdf`;
-
-        // Customer email
+        // Customer email message
         const customerMessage = `Dear ${receiptData.name},
 
 Thank you for your payment.
 
+Receipt Number   : ${receipt_no}
 Seniority Number : ${seniorityNumber}
 Amount Paid      : Rs.${amountpaid.toLocaleString('en-IN')}
 Payment Mode     : ${receiptData.paymentmode}
-Transaction ID   : ${transactionid}
+Transaction ID   : ${receiptData.transactionid}
 Date             : ${new Date(receiptData.date).toLocaleDateString('en-IN')}
 
 ---
@@ -127,7 +118,7 @@ Your payment receipt is attached to this email. For any questions please contact
 Best Regards,
 Navanagara House Building Co-operative Society`;
 
-        // Company copy email
+        // Company copy message
         const companyMessage = `New Receipt Generated
 
 Member Name      : ${receiptData.name}
@@ -137,16 +128,15 @@ Mobile           : ${receiptData.mobilenumber || 'Not provided'}
 
 ---
 
+Receipt Number   : ${receipt_no}
 Amount Paid      : Rs.${amountpaid.toLocaleString('en-IN')}
 Booking Amount   : Rs.${bookingamount.toLocaleString('en-IN')}
 Total Received   : Rs.${receiptData.totalreceived.toLocaleString('en-IN')}
 Payment Mode     : ${receiptData.paymentmode}
 Payment Type     : ${receiptData.paymenttype}
-Transaction ID   : ${transactionid}
+Transaction ID   : ${receiptData.transactionid}
 Date             : ${new Date(receiptData.date).toLocaleDateString('en-IN')}
 Project          : ${receiptData.projectname || 'N/A'}
-Site Dimension   : ${sitedimension || 'N/A'}
-Bank             : ${bank || 'N/A'}
 
 ---
 
@@ -155,38 +145,38 @@ Navanagara Admin System`;
 
         const emailPromises = [];
 
-        // 1. Send to customer
+        // 1. Send to CUSTOMER email (from form)
         if (userEmail && userEmail.trim()) {
           console.log(`📧 Sending to customer: ${userEmail}`);
           emailPromises.push(
             sendMail(
               userEmail.trim(),
-              `Payment Receipt`,
+              `Payment Receipt - ${receipt_no}`,
               customerMessage,
               pdfBase64,
               pdfFilename
             )
               .then(() => console.log(`✅ Email sent to customer: ${userEmail}`))
-              .catch((err) => console.error(`⚠️ Failed to send to customer: ${err.message}`))
+              .catch((error) => console.error(`⚠️ Failed to send to customer ${userEmail}:`, error.message))
           );
         } else {
           console.log(`⚠️ No customer email provided`);
         }
 
-        // 2. Send to company
-        const companyEmail = process.env.COMPANY_EMAIL;
+        // 2. Send to COMPANY email (from .env)
+        const companyEmail = process.env.COMPANY_EMAIL; // ✅ fixed from EMAIL_USER
         if (companyEmail && companyEmail.trim()) {
           console.log(`📧 Sending to company: ${companyEmail}`);
           emailPromises.push(
             sendMail(
               companyEmail.trim(),
-              `[COMPANY COPY] New Receipt`,
+              `[COMPANY COPY] New Receipt - ${receipt_no}`,
               companyMessage,
               pdfBase64,
               pdfFilename
             )
               .then(() => console.log(`✅ Email sent to company: ${companyEmail}`))
-              .catch((err) => console.error(`⚠️ Failed to send to company: ${err.message}`))
+              .catch((error) => console.error(`⚠️ Failed to send to company ${companyEmail}:`, error.message))
           );
         } else {
           console.log(`⚠️ COMPANY_EMAIL not configured in .env`);
