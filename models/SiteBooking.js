@@ -23,7 +23,7 @@ const siteBookingSchema = new mongoose.Schema(
     },
     bookingamount: {
       type: Number,
-      required: true,
+      required: false,   // ← was required: true, now optional
     },
     downpayment: Number,
     installments: Number,
@@ -39,8 +39,4 @@ const siteBookingSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model(
-  "SiteBooking",
-  siteBookingSchema,
-  "sitebookings",
-);
+module.exports = mongoose.model("SiteBooking", siteBookingSchema, "sitebookings");
