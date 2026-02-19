@@ -75,10 +75,10 @@ exports.createReceipt = async (req, res) => {
       paymentmode: req.body.paymentmode,
       paymenttype: req.body.paymenttype,
       transactionid: req.body.transactionid,
-      sitedimension: req.body.dimension || bookingDoc.sitedimension,  // ✅ FIXED: save as 'sitedimension'
+      sitedimension: req.body.dimension || bookingDoc.sitedimension,
       created_by: req.body.created_by || 'Admin',
       bank,
-      seniority_no: seniorityNumber  // ✅ FIXED: changed from 'senioritynumber' to 'seniority_no'
+      seniority_no: seniorityNumber
     };
 
     const receipt = new Receipt(receiptData);
@@ -99,12 +99,11 @@ exports.createReceipt = async (req, res) => {
         const pdfBase64 = req.body.pdfBase64;
         const pdfFilename = req.body.pdfFilename || `Receipt_${receipt_no}.pdf`;
 
-        // Customer email message
+        // Customer email message — receipt_no removed
         const customerMessage = `Dear ${receiptData.name},
 
 Thank you for your payment.
 
-Receipt Number   : ${receipt_no}
 Seniority Number : ${seniorityNumber}
 Amount Paid      : Rs.${amountpaid.toLocaleString('en-IN')}
 Payment Mode     : ${receiptData.paymentmode}
@@ -118,7 +117,7 @@ Your payment receipt is attached to this email. For any questions please contact
 Best Regards,
 Navanagara House Building Co-operative Society`;
 
-        // Company copy message
+        // Company copy message — receipt_no removed
         const companyMessage = `New Receipt Generated
 
 Member Name      : ${receiptData.name}
@@ -128,7 +127,6 @@ Mobile           : ${receiptData.mobilenumber || 'Not provided'}
 
 ---
 
-Receipt Number   : ${receipt_no}
 Amount Paid      : Rs.${amountpaid.toLocaleString('en-IN')}
 Booking Amount   : Rs.${bookingamount.toLocaleString('en-IN')}
 Total Received   : Rs.${receiptData.totalreceived.toLocaleString('en-IN')}
@@ -151,7 +149,7 @@ Navanagara Admin System`;
           emailPromises.push(
             sendMail(
               userEmail.trim(),
-              `Payment Receipt - ${receipt_no}`,
+              `Payment Receipt`,
               customerMessage,
               pdfBase64,
               pdfFilename
@@ -164,13 +162,13 @@ Navanagara Admin System`;
         }
 
         // 2. Send to COMPANY email (from .env)
-        const companyEmail = process.env.COMPANY_EMAIL; // ✅ fixed from EMAIL_USER
+        const companyEmail = process.env.COMPANY_EMAIL;
         if (companyEmail && companyEmail.trim()) {
           console.log(`📧 Sending to company: ${companyEmail}`);
           emailPromises.push(
             sendMail(
               companyEmail.trim(),
-              `[COMPANY COPY] New Receipt - ${receipt_no}`,
+              `[COMPANY COPY] New Receipt`,
               companyMessage,
               pdfBase64,
               pdfFilename
