@@ -57,9 +57,13 @@ exports.createReceipt = async (req, res) => {
     const bank = req.body.bank || bookingDoc.bank || '';
     const amountpaid = parseInt(req.body.amountpaid || 0);
 
+    // Generate unique receipt number
+    const receipt_no = await generateReceiptNumber();
+
     // Create receipt object
     const receiptData = {
       membershipid: seniorityNumber,
+      receipt_no,
       name: req.body.name || memberDoc.name,
       email: userEmail,
       projectname: req.body.projectname || bookingDoc.projectname,
@@ -80,7 +84,7 @@ exports.createReceipt = async (req, res) => {
     const receipt = new Receipt(receiptData);
     await receipt.save();
 
-    console.log('📄 Receipt created successfully');
+    console.log('📄 Receipt created successfully:', receipt_no);
 
     // Send response immediately - don't wait for emails
     res.status(201).json({
@@ -93,9 +97,9 @@ exports.createReceipt = async (req, res) => {
     setImmediate(async () => {
       try {
         const pdfBase64 = req.body.pdfBase64;
-        const pdfFilename = req.body.pdfFilename || `Receipt.pdf`;
+        const pdfFilename = req.body.pdfFilename || `Receipt_${receipt_no}.pdf`;
 
-        // Customer email message
+        // Customer email message — receipt_no removed
         const customerMessage = `Dear ${receiptData.name},
 
 Thank you for your payment.
@@ -113,7 +117,7 @@ Your payment receipt is attached to this email. For any questions please contact
 Best Regards,
 Navanagara House Building Co-operative Society`;
 
-        // Company copy message
+        // Company copy message — receipt_no removed
         const companyMessage = `New Receipt Generated
 
 Member Name      : ${receiptData.name}
