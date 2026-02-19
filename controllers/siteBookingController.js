@@ -1,6 +1,12 @@
 const SiteBooking = require("../models/SiteBooking");
 const Member = require("../models/Member");
 
+// Helper — returns undefined instead of NaN when value is missing
+const safeInt = (value) => {
+  const parsed = parseInt(value);
+  return isNaN(parsed) ? undefined : parsed;
+};
+
 // Create site booking
 exports.createSiteBooking = async (req, res) => {
   try {
@@ -8,6 +14,7 @@ exports.createSiteBooking = async (req, res) => {
     if (!seniority_no) {
       return res.status(400).send("seniority_no is required");
     }
+
     const memberDoc = await Member.findOne({ seniority_no: seniority_no });
     if (!memberDoc) {
       return res.status(404).send("Member not found for this seniority number");
@@ -15,9 +22,8 @@ exports.createSiteBooking = async (req, res) => {
 
     const mobilenumber = memberDoc.mobile;
 
-    // createSiteBooking — change the SiteBooking creation:
     const siteBooking = new SiteBooking({
-      seniority_no: req.body.seniority_no, // ← was membershipid + senioritynumber
+      seniority_no: req.body.seniority_no,
       name: req.body.name,
       mobilenumber: mobilenumber,
       date: new Date(req.body.date),
@@ -25,9 +31,9 @@ exports.createSiteBooking = async (req, res) => {
       sitedimension: req.body.sitedimension,
       transactionid: req.body.transactionid,
       totalamount: parseInt(req.body.totalamount),
-      bookingamount: parseInt(req.body.bookingamount),
-      downpayment: parseInt(req.body.downpayment),
-      installments: parseInt(req.body.installments),
+      bookingamount: safeInt(req.body.bookingamount),   // ← safe, won't send NaN
+      downpayment: safeInt(req.body.downpayment),       // ← safe, won't send NaN
+      installments: safeInt(req.body.installments),     // ← safe, won't send NaN
       paymentmode: req.body.paymentmode,
       bank: req.body.bank,
     });
@@ -62,9 +68,9 @@ exports.updateSiteBooking = async (req, res) => {
       sitedimension: req.body.sitedimension,
       transactionid: req.body.transactionid,
       totalamount: parseInt(req.body.totalamount),
-      bookingamount: parseInt(req.body.bookingamount),
-      downpayment: parseInt(req.body.downpayment),
-      installments: req.body.installments,
+      bookingamount: safeInt(req.body.bookingamount),   // ← safe
+      downpayment: safeInt(req.body.downpayment),       // ← safe
+      installments: safeInt(req.body.installments),     // ← safe
       paymentmode: req.body.paymentmode,
     };
 
